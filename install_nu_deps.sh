@@ -384,12 +384,12 @@ echo "[ok] TPM"
 # ============================================================
 DOTFILES_DIR="${TARGET_HOME}/dotfiles"
 if [ ! -d "$DOTFILES_DIR" ]; then
-    echo "[cloning] omerxx/dotfiles ..."
+    echo "[cloning] dsert20712/dotfiles ..."
     if [ "$TEST_MODE" -eq 1 ]; then
-        git clone https://github.com/omerxx/dotfiles.git "$DOTFILES_DIR"
+        git clone https://github.com/dsert20712/dotfiles.git "$DOTFILES_DIR"
         chown -R "${TARGET_USER}:${TARGET_USER}" "$DOTFILES_DIR"
     else
-        as_user 'git clone https://github.com/omerxx/dotfiles.git ~/dotfiles'
+        as_user 'git clone https://github.com/dsert20712/dotfiles.git ~/dotfiles'
     fi
 fi
 echo "[ok] dotfiles repo"
