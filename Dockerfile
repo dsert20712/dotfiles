@@ -17,7 +17,7 @@ RUN apt-get update -qq && apt-get install -y -qq \
     && rm -rf /var/lib/apt/lists/*
 
 # ── Create user with host UIDs/GIDs ──────────────────────────────────────────
-RUN userdel node 2>/dev/null || true \
+RUN (id -un ${USER_ID} 2>/dev/null && userdel $(id -un ${USER_ID}) 2>/dev/null) || true \
     && groupadd -g ${GROUP_ID} ${USERNAME} \
     && useradd -u ${USER_ID} -g ${GROUP_ID} --create-home --shell /bin/bash ${USERNAME} \
     && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} \
