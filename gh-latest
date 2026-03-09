@@ -1,0 +1,4 @@
+#!/bin/sh
+# Usage: gh-latest owner/repo
+# Prints the latest release tag (e.g. v1.2.3) without hitting the rate-limited API.
+curl -fsSL -o /dev/null -w '%{url_effective}' "https://github.com/$1/releases/latest" | sed 's|.*/||'

@@ -36,13 +36,13 @@ RUN set -e; \
     esac
 
 # ── Helper: latest GitHub release tag ────────────────────────────────────────
-# Usage: latest_tag owner/repo
-# Writes the tag to stdout.
+COPY gh-latest /usr/local/bin/gh-latest
+RUN chmod +x /usr/local/bin/gh-latest
 
 # ── Nushell ──────────────────────────────────────────────────────────────────
 RUN set -e; \
     RUST_ARCH=$(cat /tmp/RUST_ARCH); \
-    VER=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/nushell/nushell/releases/latest | sed 's|.*/||'); \
+    VER=$(gh-latest nushell/nushell); \
     curl -fsSL "https://github.com/nushell/nushell/releases/download/${VER}/nu-${VER}-${RUST_ARCH}-unknown-linux-gnu.tar.gz" -o /tmp/nu.tar.gz; \
     tar xzf /tmp/nu.tar.gz -C /tmp; \
     cp /tmp/nu-*/nu /usr/local/bin/; \
@@ -51,7 +51,7 @@ RUN set -e; \
 # ── Starship ─────────────────────────────────────────────────────────────────
 RUN set -e; \
     RUST_ARCH=$(cat /tmp/RUST_ARCH); \
-    VER=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/starship/starship/releases/latest | sed 's|.*/||'); \
+    VER=$(gh-latest starship/starship); \
     curl -fsSL "https://github.com/starship/starship/releases/download/${VER}/starship-${RUST_ARCH}-unknown-linux-gnu.tar.gz" -o /tmp/starship.tar.gz; \
     tar xzf /tmp/starship.tar.gz -C /usr/local/bin/; \
     chmod +x /usr/local/bin/starship; \
@@ -60,7 +60,7 @@ RUN set -e; \
 # ── Zoxide ───────────────────────────────────────────────────────────────────
 RUN set -e; \
     RUST_ARCH=$(cat /tmp/RUST_ARCH); \
-    VER=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/ajeetdsouza/zoxide/releases/latest | sed 's|.*/||'); \
+    VER=$(gh-latest ajeetdsouza/zoxide); \
     curl -fsSL "https://github.com/ajeetdsouza/zoxide/releases/download/${VER}/zoxide-${VER#v}-${RUST_ARCH}-unknown-linux-musl.tar.gz" -o /tmp/zoxide.tar.gz; \
     tar xzf /tmp/zoxide.tar.gz -C /usr/local/bin/ zoxide; \
     chmod +x /usr/local/bin/zoxide; \
@@ -81,7 +81,7 @@ RUN set -e; \
 # ── eza ──────────────────────────────────────────────────────────────────────
 RUN set -e; \
     RUST_ARCH=$(cat /tmp/RUST_ARCH); \
-    VER=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/eza-community/eza/releases/latest | sed 's|.*/||'); \
+    VER=$(gh-latest eza-community/eza); \
     curl -fsSL "https://github.com/eza-community/eza/releases/download/${VER}/eza_${RUST_ARCH}-unknown-linux-gnu.tar.gz" -o /tmp/eza.tar.gz; \
     tar xzf /tmp/eza.tar.gz -C /usr/local/bin/; \
     chmod +x /usr/local/bin/eza; \
@@ -90,7 +90,7 @@ RUN set -e; \
 # ── fzf ──────────────────────────────────────────────────────────────────────
 RUN set -e; \
     GO_ARCH=$(cat /tmp/GO_ARCH); \
-    VER=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/junegunn/fzf/releases/latest | sed 's|.*/||'); \
+    VER=$(gh-latest junegunn/fzf); \
     CLEAN_VER="${VER#v}"; \
     curl -fsSL "https://github.com/junegunn/fzf/releases/download/${VER}/fzf-${CLEAN_VER}-linux_${GO_ARCH}.tar.gz" -o /tmp/fzf.tar.gz; \
     tar xzf /tmp/fzf.tar.gz -C /usr/local/bin/; \
@@ -100,7 +100,7 @@ RUN set -e; \
 # ── Carapace ─────────────────────────────────────────────────────────────────
 RUN set -e; \
     GO_ARCH=$(cat /tmp/GO_ARCH); \
-    VER=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/carapace-sh/carapace-bin/releases/latest | sed 's|.*/||'); \
+    VER=$(gh-latest carapace-sh/carapace-bin); \
     CLEAN_VER="${VER#v}"; \
     curl -fsSL "https://github.com/carapace-sh/carapace-bin/releases/download/${VER}/carapace-bin_${CLEAN_VER}_linux_${GO_ARCH}.tar.gz" -o /tmp/carapace.tar.gz; \
     mkdir -p /tmp/carapace-extract && tar xzf /tmp/carapace.tar.gz -C /tmp/carapace-extract; \
@@ -110,14 +110,14 @@ RUN set -e; \
 # ── direnv ───────────────────────────────────────────────────────────────────
 RUN set -e; \
     GO_ARCH=$(cat /tmp/GO_ARCH); \
-    VER=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/direnv/direnv/releases/latest | sed 's|.*/||'); \
+    VER=$(gh-latest direnv/direnv); \
     curl -fsSL "https://github.com/direnv/direnv/releases/download/${VER}/direnv.linux-${GO_ARCH}" -o /usr/local/bin/direnv; \
     chmod +x /usr/local/bin/direnv
 
 # ── bat ──────────────────────────────────────────────────────────────────────
 RUN set -e; \
     RUST_ARCH=$(cat /tmp/RUST_ARCH); \
-    VER=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/sharkdp/bat/releases/latest | sed 's|.*/||'); \
+    VER=$(gh-latest sharkdp/bat); \
     curl -fsSL "https://github.com/sharkdp/bat/releases/download/${VER}/bat-${VER}-${RUST_ARCH}-unknown-linux-gnu.tar.gz" -o /tmp/bat.tar.gz; \
     tar xzf /tmp/bat.tar.gz -C /tmp; \
     cp /tmp/bat-*/bat /usr/local/bin/; \
@@ -126,7 +126,7 @@ RUN set -e; \
 # ── ripgrep ──────────────────────────────────────────────────────────────────
 RUN set -e; \
     RUST_ARCH=$(cat /tmp/RUST_ARCH); \
-    VER=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/BurntSushi/ripgrep/releases/latest | sed 's|.*/||'); \
+    VER=$(gh-latest BurntSushi/ripgrep); \
     curl -fsSL "https://github.com/BurntSushi/ripgrep/releases/download/${VER}/ripgrep-${VER}-${RUST_ARCH}-unknown-linux-musl.tar.gz" -o /tmp/rg.tar.gz; \
     tar xzf /tmp/rg.tar.gz -C /tmp; \
     cp /tmp/ripgrep-*/rg /usr/local/bin/; \
@@ -135,7 +135,7 @@ RUN set -e; \
 # ── fd ───────────────────────────────────────────────────────────────────────
 RUN set -e; \
     RUST_ARCH=$(cat /tmp/RUST_ARCH); \
-    VER=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/sharkdp/fd/releases/latest | sed 's|.*/||'); \
+    VER=$(gh-latest sharkdp/fd); \
     curl -fsSL "https://github.com/sharkdp/fd/releases/download/${VER}/fd-${VER}-${RUST_ARCH}-unknown-linux-gnu.tar.gz" -o /tmp/fd.tar.gz; \
     tar xzf /tmp/fd.tar.gz -C /tmp; \
     cp /tmp/fd-*/fd /usr/local/bin/; \
@@ -144,7 +144,7 @@ RUN set -e; \
 # ── lazygit ──────────────────────────────────────────────────────────────────
 RUN set -e; \
     RUST_ARCH=$(cat /tmp/RUST_ARCH); \
-    VER=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/jesseduffield/lazygit/releases/latest | sed 's|.*/||'); \
+    VER=$(gh-latest jesseduffield/lazygit); \
     CLEAN_VER="${VER#v}"; \
     curl -fsSL "https://github.com/jesseduffield/lazygit/releases/download/${VER}/lazygit_${CLEAN_VER}_Linux_${RUST_ARCH}.tar.gz" -o /tmp/lazygit.tar.gz; \
     tar xzf /tmp/lazygit.tar.gz -C /tmp lazygit; \
@@ -154,7 +154,7 @@ RUN set -e; \
 # ── zellij ───────────────────────────────────────────────────────────────────
 RUN set -e; \
     RUST_ARCH=$(cat /tmp/RUST_ARCH); \
-    VER=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/zellij-org/zellij/releases/latest | sed 's|.*/||'); \
+    VER=$(gh-latest zellij-org/zellij); \
     curl -fsSL "https://github.com/zellij-org/zellij/releases/download/${VER}/zellij-${RUST_ARCH}-unknown-linux-musl.tar.gz" -o /tmp/zellij.tar.gz; \
     tar xzf /tmp/zellij.tar.gz -C /usr/local/bin/; \
     chmod +x /usr/local/bin/zellij; \
@@ -163,7 +163,7 @@ RUN set -e; \
 # ── yazi ─────────────────────────────────────────────────────────────────────
 RUN set -e; \
     RUST_ARCH=$(cat /tmp/RUST_ARCH); \
-    VER=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/sxyazi/yazi/releases/latest | sed 's|.*/||'); \
+    VER=$(gh-latest sxyazi/yazi); \
     curl -fsSL "https://github.com/sxyazi/yazi/releases/download/${VER}/yazi-${RUST_ARCH}-unknown-linux-gnu.zip" -o /tmp/yazi.zip; \
     unzip -q /tmp/yazi.zip -d /tmp/yazi-extract; \
     cp /tmp/yazi-extract/yazi-*/yazi /usr/local/bin/; \
@@ -174,7 +174,7 @@ RUN set -e; \
 # ── worktrunk (wt) ───────────────────────────────────────────────────────────
 RUN set -e; \
     RUST_ARCH=$(cat /tmp/RUST_ARCH); \
-    VER=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/max-sixty/worktrunk/releases/latest | sed 's|.*/||'); \
+    VER=$(gh-latest max-sixty/worktrunk); \
     curl -fsSL "https://github.com/max-sixty/worktrunk/releases/download/${VER}/worktrunk-${RUST_ARCH}-unknown-linux-musl.tar.xz" -o /tmp/wt.tar.xz; \
     tar xJf /tmp/wt.tar.xz -C /tmp; \
     cp /tmp/worktrunk-*/wt /usr/local/bin/; \
@@ -184,7 +184,7 @@ RUN set -e; \
 # ── gh-dash ──────────────────────────────────────────────────────────────────
 RUN set -e; \
     GO_ARCH=$(cat /tmp/GO_ARCH); \
-    VER=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/dlvhdr/gh-dash/releases/latest | sed 's|.*/||'); \
+    VER=$(gh-latest dlvhdr/gh-dash); \
     curl -fsSL "https://github.com/dlvhdr/gh-dash/releases/download/${VER}/gh-dash_${VER}_linux-${GO_ARCH}" -o /usr/local/bin/gh-dash; \
     chmod +x /usr/local/bin/gh-dash
 
@@ -196,7 +196,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
 # ── mise ─────────────────────────────────────────────────────────────────────
 RUN set -e; \
     MISE_ARCH=$(cat /tmp/MISE_ARCH); \
-    VER=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/jdx/mise/releases/latest | sed 's|.*/||'); \
+    VER=$(gh-latest jdx/mise); \
     curl -fsSL "https://github.com/jdx/mise/releases/download/${VER}/mise-${VER}-linux-${MISE_ARCH}.tar.gz" -o /tmp/mise.tar.gz; \
     tar xzf /tmp/mise.tar.gz -C /tmp; \
     cp /tmp/mise/bin/mise /usr/local/bin/mise; \
@@ -206,7 +206,7 @@ RUN set -e; \
 # ── atuin ────────────────────────────────────────────────────────────────────
 RUN set -e; \
     RUST_ARCH=$(cat /tmp/RUST_ARCH); \
-    VER=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/atuinsh/atuin/releases/latest | sed 's|.*/||'); \
+    VER=$(gh-latest atuinsh/atuin); \
     curl -fsSL "https://github.com/atuinsh/atuin/releases/download/${VER}/atuin-${RUST_ARCH}-unknown-linux-gnu.tar.gz" -o /tmp/atuin.tar.gz; \
     tar xzf /tmp/atuin.tar.gz -C /tmp; \
     cp /tmp/atuin-*/atuin /usr/local/bin/; \
@@ -214,7 +214,7 @@ RUN set -e; \
 
 # ── JetBrainsMono Nerd Font ───────────────────────────────────────────────────
 RUN set -e; \
-    VER=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/ryanoasis/nerd-fonts/releases/latest | sed 's|.*/||'); \
+    VER=$(gh-latest ryanoasis/nerd-fonts); \
     mkdir -p /usr/local/share/fonts/NerdFonts; \
     curl -fsSL "https://github.com/ryanoasis/nerd-fonts/releases/download/${VER}/JetBrainsMono.tar.xz" -o /tmp/nf.tar.xz; \
     tar xJf /tmp/nf.tar.xz -C /usr/local/share/fonts/NerdFonts; \
