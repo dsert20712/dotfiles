@@ -227,8 +227,12 @@ RUN git clone https://github.com/tmux-plugins/tpm /home/${USERNAME}/.tmux/plugin
 
 # ── Copy dotfiles & stow ──────────────────────────────────────────────────────
 COPY --chown=${USERNAME}:${USERNAME} . /home/${USERNAME}/dotfiles/
-RUN cd /home/${USERNAME}/dotfiles && \
-    sudo -u ${USERNAME} stow --dir=/home/${USERNAME}/dotfiles --target=/home/${USERNAME} .
+RUN mkdir -p /home/${USERNAME}/.config && \
+    chown ${USERNAME}:${USERNAME} /home/${USERNAME}/.config && \
+    cd /home/${USERNAME}/dotfiles && \
+    sudo -u ${USERNAME} stow --dir=/home/${USERNAME}/dotfiles --target=/home/${USERNAME}/.config --ignore=wezterm --ignore=ghostty .
+# ── Trust mise global config ──────────────────────────────────────────────────
+RUN sudo -u ${USERNAME} mise trust /home/${USERNAME}/.config/mise/config.toml 2>/dev/null || true
 
 # ── User-level init files ─────────────────────────────────────────────────────
 USER ${USERNAME}
