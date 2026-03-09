@@ -257,5 +257,4 @@ RUN chsh -s "$(which nu)" ${USERNAME}
 
 USER ${USERNAME}
 WORKDIR /home/${USERNAME}
-SHELL ["/usr/local/bin/nu", "-c"]
-CMD ["/usr/local/bin/nu"]
+CMD ["/usr/bin/tmux"]
