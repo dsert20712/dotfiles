@@ -198,6 +198,42 @@ install_zellij() {
 }
 install_if_missing zellij install_zellij
 
+# --- yazi (terminal file manager) ---
+install_yazi() {
+    local ver
+    ver=$(curl -s https://api.github.com/repos/sxyazi/yazi/releases/latest | grep tag_name | cut -d '"' -f4)
+    curl -fsSL "https://github.com/sxyazi/yazi/releases/download/${ver}/yazi-${RUST_ARCH}-unknown-linux-gnu.zip" -o /tmp/yazi.zip
+    unzip -q /tmp/yazi.zip -d /tmp/yazi-extract
+    cp /tmp/yazi-extract/yazi-*/yazi /usr/local/bin/
+    cp /tmp/yazi-extract/yazi-*/ya /usr/local/bin/
+    chmod +x /usr/local/bin/yazi /usr/local/bin/ya
+    rm -rf /tmp/yazi.zip /tmp/yazi-extract
+}
+install_if_missing yazi install_yazi
+
+# --- worktrunk (wt) - git worktree manager ---
+install_wt() {
+    local ver
+    ver=$(curl -s https://api.github.com/repos/max-sixty/worktrunk/releases/latest | grep tag_name | cut -d '"' -f4)
+    curl -fsSL "https://github.com/max-sixty/worktrunk/releases/download/${ver}/worktrunk-${RUST_ARCH}-unknown-linux-musl.tar.xz" -o /tmp/wt.tar.xz
+    tar xJf /tmp/wt.tar.xz -C /tmp
+    cp /tmp/worktrunk-*/wt /usr/local/bin/
+    chmod +x /usr/local/bin/wt
+    rm -rf /tmp/wt.tar.xz /tmp/worktrunk-*
+}
+install_if_missing wt install_wt
+
+# --- gh-dash (GitHub dashboard TUI) ---
+install_ghdash() {
+    local ver
+    ver=$(curl -s https://api.github.com/repos/dlvhdr/gh-dash/releases/latest | grep tag_name | cut -d '"' -f4)
+    curl -fsSL "https://github.com/dlvhdr/gh-dash/releases/download/${ver}/gh-dash_${ver#v}_linux-${GO_ARCH}" -o /tmp/gh-dash
+    cp /tmp/gh-dash /usr/local/bin/gh-dash
+    chmod +x /usr/local/bin/gh-dash
+    rm -f /tmp/gh-dash
+}
+install_if_missing gh-dash install_ghdash
+
 # --- kubectl ---
 install_kubectl() {
     local stable
@@ -273,6 +309,13 @@ if ! as_user 'test -f "$HOME/.turso/turso"' 2>/dev/null; then
 fi
 echo "[ok] turso"
 
+# --- GitButler CLI (but) ---
+if ! user_has but; then
+    echo "[installing] gitbutler CLI ..."
+    as_user 'curl -fsSL https://gitbutler.com/cli | sh'
+fi
+echo "[ok] gitbutler CLI (but)"
+
 # --- TPM (Tmux Plugin Manager) ---
 TPM_DIR="${TARGET_HOME}/.tmux/plugins/tpm"
 if [ ! -d "$TPM_DIR" ]; then
@@ -301,7 +344,7 @@ as_user 'mkdir -p "$HOME/.cache/starship" "$HOME/.cache/carapace" "$HOME/.cache/
 as_user 'mkdir -p "$HOME/.config/starship" "$HOME/.config/nushell/vendor/autoload"'
 as_user 'mkdir -p "$HOME/.local/share/atuin"'
 
-as_user 'touch "$HOME/.config/nushell/vendor/autoload/wt.nu"'
+as_user 'wt shell-init nushell > "$HOME/.config/nushell/vendor/autoload/wt.nu" 2>/dev/null || touch "$HOME/.config/nushell/vendor/autoload/wt.nu"'
 as_user '[ -f "$HOME/.config/starship/starship.toml" ] || touch "$HOME/.config/starship/starship.toml"'
 
 as_user 'starship init nu > "$HOME/.cache/starship/init.nu" 2>/dev/null || touch "$HOME/.cache/starship/init.nu"'
