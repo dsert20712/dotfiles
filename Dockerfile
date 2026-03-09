@@ -234,6 +234,7 @@ RUN set -e; \
     git clone --depth=1 https://github.com/sainnhe/tmux-fzf              $P/tmux-fzf; \
     git clone --depth=1 https://github.com/wfxr/tmux-fzf-url             $P/tmux-fzf-url; \
     git clone --depth=1 https://github.com/omerxx/catppuccin-tmux        $P/catppuccin-tmux; \
+    ln -s catppuccin.tmux $P/catppuccin-tmux/catppuccin-tmux.tmux; \
     git clone --depth=1 https://github.com/omerxx/tmux-sessionx          $P/tmux-sessionx; \
     git clone --depth=1 https://github.com/omerxx/tmux-floax             $P/tmux-floax; \
     chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/.tmux
