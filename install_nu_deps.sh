@@ -74,7 +74,7 @@ if ! grep -q "^${TARGET_USER}" /etc/sudoers.d/* 2>/dev/null; then
 fi
 
 # --- Helpers ---
-as_user() { sudo -H -u "$TARGET_USER" bash -c "$1"; }
+as_user() { su - "$TARGET_USER" -c "$1"; }
 user_has() { as_user "command -v $1" &>/dev/null; }
 install_if_missing() {
     local cmd="$1" fn="$2"
