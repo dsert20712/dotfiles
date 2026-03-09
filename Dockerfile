@@ -266,6 +266,9 @@ RUN mkdir -p \
     carapace _carapace nushell > "$HOME/.cache/carapace/init.nu"               2>/dev/null || touch "$HOME/.cache/carapace/init.nu" && \
     atuin init nu          > "$HOME/.local/share/atuin/init.nu"                2>/dev/null || touch "$HOME/.local/share/atuin/init.nu"
 
+# ── Pre-install Neovim plugins (lazy.nvim sync, headless) ────────────────────
+RUN nvim --headless -c "Lazy! sync" -c "qa!" 2>&1 || true
+
 # ── Set default shell to nushell ─────────────────────────────────────────────
 USER root
 RUN chsh -s "$(which nu)" ${USERNAME}
