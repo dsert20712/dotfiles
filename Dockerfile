@@ -267,7 +267,7 @@ RUN mkdir -p \
     atuin init nu          > "$HOME/.local/share/atuin/init.nu"                2>/dev/null || touch "$HOME/.local/share/atuin/init.nu"
 
 # ── Pre-install Neovim plugins (lazy.nvim sync, headless) ────────────────────
-RUN nvim --headless -c "Lazy! sync" -c "qa!"
+RUN nvim --headless -c "Lazy! update" -c "qa!"
 
 # ── Set default shell to nushell ─────────────────────────────────────────────
 USER root
