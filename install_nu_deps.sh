@@ -5,12 +5,27 @@ set -euo pipefail
 # Install all tools needed to run omerxx/dotfiles on Ubuntu 24
 # https://github.com/omerxx/dotfiles
 #
-# Usage (Docker as root):    ./install_nu_deps.sh
-# Usage (regular Ubuntu):    sudo ./install_nu_deps.sh
+# Usage (normal):            sudo ./install_nu_deps.sh
+# Usage (sandboxed/CI):      sudo ./install_nu_deps.sh --test
 #
-# Creates user "user" if needed. System tools go to /usr/local/bin,
-# user-scoped tools go to ~/.<tool>/ via su.
+# --test  Network-restricted mode: user-scoped tools (atuin, turso, gitbutler,
+#         TPM, dotfiles clone) are installed as root and chowned to the user,
+#         because some container environments block outgoing connections from
+#         non-root UIDs. In normal use the user has network access and the
+#         default installer scripts run as the user directly.
+#
+# System tools always go to /usr/local/bin.
+# User-scoped tools (atuin, turso, gitbutler, TPM) run their own installers
+# as the target user in normal mode, going to ~/.<tool>/ as intended.
 # =============================================================================
+
+TEST_MODE=0
+for arg in "$@"; do
+    case "$arg" in
+        --test) TEST_MODE=1 ;;
+        *) echo "Unknown argument: $arg"; exit 1 ;;
+    esac
+done
 
 TARGET_USER="user"
 TARGET_HOME="/home/${TARGET_USER}"
@@ -59,7 +74,7 @@ if ! grep -q "^${TARGET_USER}" /etc/sudoers.d/* 2>/dev/null; then
 fi
 
 # --- Helpers ---
-as_user() { su - "$TARGET_USER" -c "$1"; }
+as_user() { sudo -H -u "$TARGET_USER" bash -c "$1"; }
 user_has() { as_user "command -v $1" &>/dev/null; }
 install_if_missing() {
     local cmd="$1" fn="$2"
@@ -302,7 +317,7 @@ echo "[ok] mise"
 as_user 'mkdir -p "$HOME/.local/share/mise/shims"'
 
 # --- Atuin ---
-install_atuin() {
+install_atuin_test() {
     local ver
     ver=$(curl -s https://api.github.com/repos/atuinsh/atuin/releases/latest | grep tag_name | cut -d '"' -f4)
     curl -fsSL "https://github.com/atuinsh/atuin/releases/download/${ver}/atuin-${RUST_ARCH}-unknown-linux-gnu.tar.gz" -o /tmp/atuin.tar.gz
@@ -312,12 +327,16 @@ install_atuin() {
 }
 if ! user_has atuin; then
     echo "[installing] atuin ..."
-    install_atuin
+    if [ "$TEST_MODE" -eq 1 ]; then
+        install_atuin_test
+    else
+        as_user 'curl -fsSL https://setup.atuin.sh | bash'
+    fi
 fi
 echo "[ok] atuin"
 
 # --- Turso ---
-install_turso() {
+install_turso_test() {
     local ver
     ver=$(curl -s https://api.github.com/repos/tursodatabase/turso-cli/releases/latest | grep tag_name | cut -d '"' -f4)
     curl -fsSL "https://github.com/tursodatabase/turso-cli/releases/download/${ver}/turso-cli_Linux_${RUST_ARCH}.tar.gz" -o /tmp/turso.tar.gz
@@ -328,20 +347,35 @@ install_turso() {
 }
 if ! user_has turso; then
     echo "[installing] turso ..."
-    install_turso
+    if [ "$TEST_MODE" -eq 1 ]; then
+        install_turso_test
+    else
+        as_user 'curl -sSfL https://get.tur.so/install.sh | bash'
+    fi
 fi
 echo "[ok] turso"
 
 # --- GitButler CLI (but) ---
-# Note: no standalone Linux binary available; skipped
-echo "[skip] gitbutler CLI (but) - no Linux binary release available"
+if ! user_has but; then
+    echo "[installing] gitbutler CLI ..."
+    if [ "$TEST_MODE" -eq 1 ]; then
+        echo "[skip] gitbutler CLI (but) - no Linux binary release available in test mode"
+    else
+        as_user 'curl -fsSL https://gitbutler.com/cli | sh'
+    fi
+fi
+echo "[ok] gitbutler CLI (but)"
 
 # --- TPM (Tmux Plugin Manager) ---
 TPM_DIR="${TARGET_HOME}/.tmux/plugins/tpm"
 if [ ! -d "$TPM_DIR" ]; then
     echo "[installing] TPM (tmux plugin manager) ..."
-    git clone https://github.com/tmux-plugins/tpm "$TPM_DIR"
-    chown -R "${TARGET_USER}:${TARGET_USER}" "${TARGET_HOME}/.tmux"
+    if [ "$TEST_MODE" -eq 1 ]; then
+        git clone https://github.com/tmux-plugins/tpm "$TPM_DIR"
+        chown -R "${TARGET_USER}:${TARGET_USER}" "${TARGET_HOME}/.tmux"
+    else
+        as_user 'git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm'
+    fi
 fi
 echo "[ok] TPM"
 
@@ -351,8 +385,12 @@ echo "[ok] TPM"
 DOTFILES_DIR="${TARGET_HOME}/dotfiles"
 if [ ! -d "$DOTFILES_DIR" ]; then
     echo "[cloning] omerxx/dotfiles ..."
-    git clone https://github.com/omerxx/dotfiles.git "$DOTFILES_DIR"
-    chown -R "${TARGET_USER}:${TARGET_USER}" "$DOTFILES_DIR"
+    if [ "$TEST_MODE" -eq 1 ]; then
+        git clone https://github.com/omerxx/dotfiles.git "$DOTFILES_DIR"
+        chown -R "${TARGET_USER}:${TARGET_USER}" "$DOTFILES_DIR"
+    else
+        as_user 'git clone https://github.com/omerxx/dotfiles.git ~/dotfiles'
+    fi
 fi
 echo "[ok] dotfiles repo"
 
@@ -362,22 +400,25 @@ echo "[ok] dotfiles repo"
 echo ""
 echo "=== Generating nushell init files ==="
 
-# Create all needed dirs as root then chown
-mkdir -p \
-    "${TARGET_HOME}/.cache/starship" \
-    "${TARGET_HOME}/.cache/carapace" \
-    "${TARGET_HOME}/.cache/mise" \
-    "${TARGET_HOME}/.config/starship" \
-    "${TARGET_HOME}/.config/nushell/vendor/autoload" \
-    "${TARGET_HOME}/.local/share/atuin"
-chown -R "${TARGET_USER}:${TARGET_USER}" \
-    "${TARGET_HOME}/.cache" \
-    "${TARGET_HOME}/.config" \
-    "${TARGET_HOME}/.local"
+if [ "$TEST_MODE" -eq 1 ]; then
+    mkdir -p \
+        "${TARGET_HOME}/.cache/starship" \
+        "${TARGET_HOME}/.cache/carapace" \
+        "${TARGET_HOME}/.cache/mise" \
+        "${TARGET_HOME}/.config/starship" \
+        "${TARGET_HOME}/.config/nushell/vendor/autoload" \
+        "${TARGET_HOME}/.local/share/atuin"
+    chown -R "${TARGET_USER}:${TARGET_USER}" \
+        "${TARGET_HOME}/.cache" \
+        "${TARGET_HOME}/.config" \
+        "${TARGET_HOME}/.local"
+else
+    as_user 'mkdir -p "$HOME/.cache/starship" "$HOME/.cache/carapace" "$HOME/.cache/mise"'
+    as_user 'mkdir -p "$HOME/.config/starship" "$HOME/.config/nushell/vendor/autoload"'
+    as_user 'mkdir -p "$HOME/.local/share/atuin"'
+fi
 
-# Generate init files as user (no network needed, just local binaries)
 as_user 'wt shell-init nushell > "$HOME/.config/nushell/vendor/autoload/wt.nu" 2>/dev/null || touch "$HOME/.config/nushell/vendor/autoload/wt.nu"'
-
 as_user 'starship init nu > "$HOME/.cache/starship/init.nu" 2>/dev/null || touch "$HOME/.cache/starship/init.nu"'
 as_user 'zoxide init nushell > "$HOME/.zoxide.nu" 2>/dev/null || touch "$HOME/.zoxide.nu"'
 as_user 'mise activate nu > "$HOME/.cache/mise/init.nu" 2>/dev/null || touch "$HOME/.cache/mise/init.nu"'
