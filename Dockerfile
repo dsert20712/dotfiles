@@ -8,6 +8,8 @@ ARG USER_ID
 ARG GROUP_ID
 ARG DOCKER_GROUP_ID
 ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
 
 # ── System packages ──────────────────────────────────────────────────────────
 RUN apt-get update -qq && apt-get install -y -qq \
