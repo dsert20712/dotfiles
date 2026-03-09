@@ -25,8 +25,8 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 case "$ARCH" in
-    amd64) GO_ARCH="amd64"; RUST_ARCH="x86_64" ;;
-    arm64) GO_ARCH="arm64"; RUST_ARCH="aarch64" ;;
+    amd64) GO_ARCH="amd64"; RUST_ARCH="x86_64"; MISE_ARCH="x64" ;;
+    arm64) GO_ARCH="arm64"; RUST_ARCH="aarch64"; MISE_ARCH="arm64" ;;
     *) echo "Unsupported arch: $ARCH"; exit 1 ;;
 esac
 
@@ -39,6 +39,10 @@ else
     echo "[creating] User '$TARGET_USER'"
     useradd -m -s /bin/bash "$TARGET_USER"
 fi
+# Ensure home dir is owned by the target user (handles pre-existing dirs)
+mkdir -p "$TARGET_HOME"
+chown -R "${TARGET_USER}:${TARGET_USER}" "$TARGET_HOME"
+chmod 755 "$TARGET_HOME"
 
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
@@ -78,11 +82,25 @@ install_nushell() {
 install_if_missing nu install_nushell
 
 # --- Starship ---
-install_starship() { curl -fsSL https://starship.rs/install.sh | sh -s -- -y; }
+install_starship() {
+    local ver
+    ver=$(curl -s https://api.github.com/repos/starship/starship/releases/latest | grep tag_name | cut -d '"' -f4)
+    curl -fsSL "https://github.com/starship/starship/releases/download/${ver}/starship-${RUST_ARCH}-unknown-linux-gnu.tar.gz" -o /tmp/starship.tar.gz
+    tar xzf /tmp/starship.tar.gz -C /usr/local/bin/
+    chmod +x /usr/local/bin/starship
+    rm -f /tmp/starship.tar.gz
+}
 install_if_missing starship install_starship
 
 # --- Zoxide ---
-install_zoxide() { curl -fsSL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash; }
+install_zoxide() {
+    local ver
+    ver=$(curl -s https://api.github.com/repos/ajeetdsouza/zoxide/releases/latest | grep tag_name | cut -d '"' -f4)
+    curl -fsSL "https://github.com/ajeetdsouza/zoxide/releases/download/${ver}/zoxide-${ver#v}-${RUST_ARCH}-unknown-linux-musl.tar.gz" -o /tmp/zoxide.tar.gz
+    tar xzf /tmp/zoxide.tar.gz -C /usr/local/bin/ zoxide
+    chmod +x /usr/local/bin/zoxide
+    rm -f /tmp/zoxide.tar.gz
+}
 install_if_missing zoxide install_zoxide
 
 # --- Neovim ---
@@ -123,9 +141,10 @@ install_if_missing fzf install_fzf
 
 # --- Carapace ---
 install_carapace() {
-    local ver
+    local ver clean_ver
     ver=$(curl -s https://api.github.com/repos/carapace-sh/carapace-bin/releases/latest | grep tag_name | cut -d '"' -f4)
-    curl -fsSL "https://github.com/carapace-sh/carapace-bin/releases/download/${ver}/carapace-bin_linux_${GO_ARCH}.tar.gz" -o /tmp/carapace.tar.gz
+    clean_ver="${ver#v}"
+    curl -fsSL "https://github.com/carapace-sh/carapace-bin/releases/download/${ver}/carapace-bin_${clean_ver}_linux_${GO_ARCH}.tar.gz" -o /tmp/carapace.tar.gz
     mkdir -p /tmp/carapace-extract && tar xzf /tmp/carapace.tar.gz -C /tmp/carapace-extract
     cp /tmp/carapace-extract/carapace /usr/local/bin/
     rm -rf /tmp/carapace.tar.gz /tmp/carapace-extract
@@ -143,10 +162,9 @@ install_if_missing direnv install_direnv
 
 # --- bat (required by tmux-sessionx) ---
 install_bat() {
-    local ver clean_ver
+    local ver
     ver=$(curl -s https://api.github.com/repos/sharkdp/bat/releases/latest | grep tag_name | cut -d '"' -f4)
-    clean_ver="${ver#v}"
-    curl -fsSL "https://github.com/sharkdp/bat/releases/download/${ver}/bat-${clean_ver}-${RUST_ARCH}-unknown-linux-gnu.tar.gz" -o /tmp/bat.tar.gz
+    curl -fsSL "https://github.com/sharkdp/bat/releases/download/${ver}/bat-${ver}-${RUST_ARCH}-unknown-linux-gnu.tar.gz" -o /tmp/bat.tar.gz
     tar xzf /tmp/bat.tar.gz -C /tmp
     cp /tmp/bat-*/bat /usr/local/bin/
     rm -rf /tmp/bat.tar.gz /tmp/bat-*
@@ -227,7 +245,7 @@ install_if_missing wt install_wt
 install_ghdash() {
     local ver
     ver=$(curl -s https://api.github.com/repos/dlvhdr/gh-dash/releases/latest | grep tag_name | cut -d '"' -f4)
-    curl -fsSL "https://github.com/dlvhdr/gh-dash/releases/download/${ver}/gh-dash_${ver#v}_linux-${GO_ARCH}" -o /tmp/gh-dash
+    curl -fsSL "https://github.com/dlvhdr/gh-dash/releases/download/${ver}/gh-dash_${ver}_linux-${GO_ARCH}" -o /tmp/gh-dash
     cp /tmp/gh-dash /usr/local/bin/gh-dash
     chmod +x /usr/local/bin/gh-dash
     rm -f /tmp/gh-dash
@@ -267,39 +285,63 @@ fi
 # ============================================================
 
 # --- mise ---
+install_mise() {
+    local ver
+    ver=$(curl -s https://api.github.com/repos/jdx/mise/releases/latest | grep tag_name | cut -d '"' -f4)
+    curl -fsSL "https://github.com/jdx/mise/releases/download/${ver}/mise-${ver}-linux-${MISE_ARCH}.tar.gz" -o /tmp/mise.tar.gz
+    tar xzf /tmp/mise.tar.gz -C /tmp
+    cp /tmp/mise/bin/mise /usr/local/bin/mise
+    chmod +x /usr/local/bin/mise
+    rm -rf /tmp/mise.tar.gz /tmp/mise
+}
 if ! user_has mise; then
     echo "[installing] mise ..."
-    as_user 'curl -fsSL https://mise.run | sh'
+    install_mise
 fi
 echo "[ok] mise"
 as_user 'mkdir -p "$HOME/.local/share/mise/shims"'
 
 # --- Atuin ---
+install_atuin() {
+    local ver
+    ver=$(curl -s https://api.github.com/repos/atuinsh/atuin/releases/latest | grep tag_name | cut -d '"' -f4)
+    curl -fsSL "https://github.com/atuinsh/atuin/releases/download/${ver}/atuin-${RUST_ARCH}-unknown-linux-gnu.tar.gz" -o /tmp/atuin.tar.gz
+    tar xzf /tmp/atuin.tar.gz -C /tmp
+    cp /tmp/atuin-*/atuin /usr/local/bin/
+    rm -rf /tmp/atuin.tar.gz /tmp/atuin-*
+}
 if ! user_has atuin; then
     echo "[installing] atuin ..."
-    as_user 'curl -fsSL https://setup.atuin.sh | bash'
+    install_atuin
 fi
 echo "[ok] atuin"
 
 # --- Turso ---
-if ! as_user 'test -f "$HOME/.turso/turso"' 2>/dev/null; then
+install_turso() {
+    local ver
+    ver=$(curl -s https://api.github.com/repos/tursodatabase/turso-cli/releases/latest | grep tag_name | cut -d '"' -f4)
+    curl -fsSL "https://github.com/tursodatabase/turso-cli/releases/download/${ver}/turso-cli_Linux_${RUST_ARCH}.tar.gz" -o /tmp/turso.tar.gz
+    tar xzf /tmp/turso.tar.gz -C /tmp
+    cp /tmp/turso /usr/local/bin/turso
+    chmod +x /usr/local/bin/turso
+    rm -rf /tmp/turso.tar.gz /tmp/turso
+}
+if ! user_has turso; then
     echo "[installing] turso ..."
-    as_user 'curl -sSfL https://get.tur.so/install.sh | bash'
+    install_turso
 fi
 echo "[ok] turso"
 
 # --- GitButler CLI (but) ---
-if ! user_has but; then
-    echo "[installing] gitbutler CLI ..."
-    as_user 'curl -fsSL https://gitbutler.com/cli | sh'
-fi
-echo "[ok] gitbutler CLI (but)"
+# Note: no standalone Linux binary available; skipped
+echo "[skip] gitbutler CLI (but) - no Linux binary release available"
 
 # --- TPM (Tmux Plugin Manager) ---
 TPM_DIR="${TARGET_HOME}/.tmux/plugins/tpm"
 if [ ! -d "$TPM_DIR" ]; then
     echo "[installing] TPM (tmux plugin manager) ..."
-    as_user 'git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm'
+    git clone https://github.com/tmux-plugins/tpm "$TPM_DIR"
+    chown -R "${TARGET_USER}:${TARGET_USER}" "${TARGET_HOME}/.tmux"
 fi
 echo "[ok] TPM"
 
@@ -309,7 +351,8 @@ echo "[ok] TPM"
 DOTFILES_DIR="${TARGET_HOME}/dotfiles"
 if [ ! -d "$DOTFILES_DIR" ]; then
     echo "[cloning] omerxx/dotfiles ..."
-    as_user 'git clone https://github.com/omerxx/dotfiles.git ~/dotfiles'
+    git clone https://github.com/omerxx/dotfiles.git "$DOTFILES_DIR"
+    chown -R "${TARGET_USER}:${TARGET_USER}" "$DOTFILES_DIR"
 fi
 echo "[ok] dotfiles repo"
 
@@ -319,18 +362,27 @@ echo "[ok] dotfiles repo"
 echo ""
 echo "=== Generating nushell init files ==="
 
-as_user 'mkdir -p "$HOME/.cache/starship" "$HOME/.cache/carapace" "$HOME/.cache/mise"'
-as_user 'mkdir -p "$HOME/.config/starship" "$HOME/.config/nushell/vendor/autoload"'
-as_user 'mkdir -p "$HOME/.local/share/atuin"'
+# Create all needed dirs as root then chown
+mkdir -p \
+    "${TARGET_HOME}/.cache/starship" \
+    "${TARGET_HOME}/.cache/carapace" \
+    "${TARGET_HOME}/.cache/mise" \
+    "${TARGET_HOME}/.config/starship" \
+    "${TARGET_HOME}/.config/nushell/vendor/autoload" \
+    "${TARGET_HOME}/.local/share/atuin"
+chown -R "${TARGET_USER}:${TARGET_USER}" \
+    "${TARGET_HOME}/.cache" \
+    "${TARGET_HOME}/.config" \
+    "${TARGET_HOME}/.local"
 
+# Generate init files as user (no network needed, just local binaries)
 as_user 'wt shell-init nushell > "$HOME/.config/nushell/vendor/autoload/wt.nu" 2>/dev/null || touch "$HOME/.config/nushell/vendor/autoload/wt.nu"'
-as_user '[ -f "$HOME/.config/starship/starship.toml" ] || touch "$HOME/.config/starship/starship.toml"'
 
 as_user 'starship init nu > "$HOME/.cache/starship/init.nu" 2>/dev/null || touch "$HOME/.cache/starship/init.nu"'
 as_user 'zoxide init nushell > "$HOME/.zoxide.nu" 2>/dev/null || touch "$HOME/.zoxide.nu"'
-as_user 'export PATH="$HOME/.local/bin:$PATH"; mise activate nu > "$HOME/.cache/mise/init.nu" 2>/dev/null || touch "$HOME/.cache/mise/init.nu"'
+as_user 'mise activate nu > "$HOME/.cache/mise/init.nu" 2>/dev/null || touch "$HOME/.cache/mise/init.nu"'
 as_user 'carapace _carapace nushell > "$HOME/.cache/carapace/init.nu" 2>/dev/null || touch "$HOME/.cache/carapace/init.nu"'
-as_user 'export PATH="$HOME/.atuin/bin:$PATH"; atuin init nu > "$HOME/.local/share/atuin/init.nu" 2>/dev/null || touch "$HOME/.local/share/atuin/init.nu"'
+as_user 'atuin init nu > "$HOME/.local/share/atuin/init.nu" 2>/dev/null || touch "$HOME/.local/share/atuin/init.nu"'
 
 # Set shell to nu
 chsh -s "$(which nu)" "$TARGET_USER" 2>/dev/null || true
