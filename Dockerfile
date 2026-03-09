@@ -229,8 +229,10 @@ RUN git clone https://github.com/tmux-plugins/tpm /home/${USERNAME}/.tmux/plugin
 COPY --chown=${USERNAME}:${USERNAME} . /home/${USERNAME}/dotfiles/
 RUN mkdir -p /home/${USERNAME}/.config && \
     chown ${USERNAME}:${USERNAME} /home/${USERNAME}/.config && \
-    cd /home/${USERNAME}/dotfiles && \
-    sudo -u ${USERNAME} stow --dir=/home/${USERNAME}/dotfiles --target=/home/${USERNAME}/.config --ignore=wezterm --ignore=ghostty .
+    sudo -u ${USERNAME} stow --dir=/home/${USERNAME}/dotfiles --target=/home/${USERNAME} --ignore=wezterm --ignore=ghostty .
+
+# ── Install TPM plugins headlessly ───────────────────────────────────────────
+RUN sudo -u ${USERNAME} /home/${USERNAME}/.tmux/plugins/tpm/bin/install_plugins
 # ── Trust mise global config ──────────────────────────────────────────────────
 RUN sudo -u ${USERNAME} mise trust /home/${USERNAME}/.config/mise/config.toml 2>/dev/null || true
 
