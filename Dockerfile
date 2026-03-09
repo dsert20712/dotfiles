@@ -221,8 +221,21 @@ RUN set -e; \
     fc-cache -f /usr/local/share/fonts/NerdFonts 2>/dev/null || true; \
     rm -f /tmp/nf.tar.xz
 
-# ── TPM (Tmux Plugin Manager) ─────────────────────────────────────────────────
-RUN git clone https://github.com/tmux-plugins/tpm /home/${USERNAME}/.tmux/plugins/tpm && \
+# ── TMux plugins (TPM + all plugins cloned directly; install_plugins is
+#    unreliable in a TTY-less Docker build environment) ────────────────────────
+RUN set -e; \
+    P=/home/${USERNAME}/.tmux/plugins; \
+    git clone --depth=1 https://github.com/tmux-plugins/tpm              $P/tpm; \
+    git clone --depth=1 https://github.com/tmux-plugins/tmux-sensible    $P/tmux-sensible; \
+    git clone --depth=1 https://github.com/tmux-plugins/tmux-yank        $P/tmux-yank; \
+    git clone --depth=1 https://github.com/tmux-plugins/tmux-resurrect   $P/tmux-resurrect; \
+    git clone --depth=1 https://github.com/tmux-plugins/tmux-continuum   $P/tmux-continuum; \
+    git clone --depth=1 https://github.com/fcsonline/tmux-thumbs         $P/tmux-thumbs; \
+    git clone --depth=1 https://github.com/sainnhe/tmux-fzf              $P/tmux-fzf; \
+    git clone --depth=1 https://github.com/wfxr/tmux-fzf-url             $P/tmux-fzf-url; \
+    git clone --depth=1 https://github.com/omerxx/catppuccin-tmux        $P/catppuccin-tmux; \
+    git clone --depth=1 https://github.com/omerxx/tmux-sessionx          $P/tmux-sessionx; \
+    git clone --depth=1 https://github.com/omerxx/tmux-floax             $P/tmux-floax; \
     chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/.tmux
 
 # ── Copy dotfiles & stow ──────────────────────────────────────────────────────
@@ -230,9 +243,6 @@ COPY --chown=${USERNAME}:${USERNAME} . /home/${USERNAME}/dotfiles/
 RUN mkdir -p /home/${USERNAME}/.config && \
     chown ${USERNAME}:${USERNAME} /home/${USERNAME}/.config && \
     sudo -u ${USERNAME} stow --dir=/home/${USERNAME}/dotfiles --target=/home/${USERNAME} --ignore=wezterm --ignore=ghostty .
-
-# ── Install TPM plugins headlessly ───────────────────────────────────────────
-RUN sudo -u ${USERNAME} /home/${USERNAME}/.tmux/plugins/tpm/bin/install_plugins
 # ── Trust mise global config ──────────────────────────────────────────────────
 RUN sudo -u ${USERNAME} mise trust /home/${USERNAME}/.config/mise/config.toml 2>/dev/null || true
 
