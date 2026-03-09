@@ -25,8 +25,8 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 case "$ARCH" in
-    amd64) GO_ARCH="amd64"; RUST_ARCH="x86_64"; KUBE_ARCH="amd64" ;;
-    arm64) GO_ARCH="arm64"; RUST_ARCH="aarch64"; KUBE_ARCH="arm64" ;;
+    amd64) GO_ARCH="amd64"; RUST_ARCH="x86_64" ;;
+    arm64) GO_ARCH="arm64"; RUST_ARCH="aarch64" ;;
     *) echo "Unsupported arch: $ARCH"; exit 1 ;;
 esac
 
@@ -233,27 +233,6 @@ install_ghdash() {
     rm -f /tmp/gh-dash
 }
 install_if_missing gh-dash install_ghdash
-
-# --- kubectl ---
-install_kubectl() {
-    local stable
-    stable=$(curl -sL https://dl.k8s.io/release/stable.txt)
-    curl -fsSL "https://dl.k8s.io/release/${stable}/bin/linux/${KUBE_ARCH}/kubectl" -o /usr/local/bin/kubectl
-    chmod +x /usr/local/bin/kubectl
-}
-install_if_missing kubectl install_kubectl
-
-# --- kubectx + kubens ---
-install_kubectx() {
-    local ver
-    ver=$(curl -s https://api.github.com/repos/ahmetb/kubectx/releases/latest | grep tag_name | cut -d '"' -f4)
-    curl -fsSL "https://github.com/ahmetb/kubectx/releases/download/${ver}/kubectx_${ver}_linux_${RUST_ARCH}.tar.gz" -o /tmp/kubectx.tar.gz
-    curl -fsSL "https://github.com/ahmetb/kubectx/releases/download/${ver}/kubens_${ver}_linux_${RUST_ARCH}.tar.gz" -o /tmp/kubens.tar.gz
-    tar xzf /tmp/kubectx.tar.gz -C /usr/local/bin/ kubectx
-    tar xzf /tmp/kubens.tar.gz -C /usr/local/bin/ kubens
-    rm -rf /tmp/kubectx* /tmp/kubens*
-}
-install_if_missing kubectx install_kubectx
 
 # --- Node.js (needed by nvim Mason/LSP) ---
 install_node() {
