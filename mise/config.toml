@@ -1,0 +1,15 @@
+[settings]
+# Automatically activate mise when entering a directory with a .mise.toml
+activate_aggressive = false
+
+# Disable the "missing tool" warning when cd-ing into a dir with a .mise.toml
+not_found_auto_install = true
+
+# Trust all .mise.toml files (disable prompt)
+# Set to false if you want per-project prompts
+always_keep_install = false
+
+[tools]
+# Global default tool versions can be defined here
+# node = "22"
+# python = "3.12"

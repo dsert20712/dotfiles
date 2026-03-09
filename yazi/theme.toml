@@ -1,0 +1,120 @@
+# Catppuccin Mocha theme for Yazi
+# https://github.com/catppuccin/yazi
+
+[flavor]
+use = "catppuccin-mocha"
+
+[manager]
+cwd = { fg = "#89b4fa" }
+
+# Hovered
+hovered         = { fg = "#1e1e2e", bg = "#cba6f7" }
+preview_hovered = { underline = true }
+
+# Find
+find_keyword  = { fg = "#f9e2af", bold = true, italic = true, underline = true }
+find_position = { fg = "#fab387", bg = "reset", bold = true, italic = true }
+
+# Marker
+marker_copied   = { fg = "#a6e3a1", bg = "#a6e3a1" }
+marker_cut      = { fg = "#f38ba8", bg = "#f38ba8" }
+marker_selected = { fg = "#89b4fa", bg = "#89b4fa" }
+marker_marked   = { fg = "#f5c2e7", bg = "#f5c2e7" }
+
+# Tab
+tab_active   = { fg = "#1e1e2e", bg = "#cba6f7" }
+tab_inactive = { fg = "#cdd6f4", bg = "#313244" }
+tab_width    = 1
+
+# Border
+border_symbol = "│"
+border_style  = { fg = "#7f849c" }
+
+# Highlighting
+syntect_theme = "~/.config/yazi/Catppuccin Mocha.tmTheme"
+
+[status]
+separator_open  = ""
+separator_close = ""
+separator_style = { fg = "#313244", bg = "#313244" }
+
+# Mode
+mode_normal = { fg = "#1e1e2e", bg = "#89b4fa", bold = true }
+mode_select = { fg = "#1e1e2e", bg = "#a6e3a1", bold = true }
+mode_unset  = { fg = "#1e1e2e", bg = "#f2cdcd", bold = true }
+
+# Progress
+progress_label  = { fg = "#ffffff", bold = true }
+progress_normal = { fg = "#89b4fa", bg = "#313244" }
+progress_error  = { fg = "#f38ba8", bg = "#313244" }
+
+# Permissions
+perm_type  = { fg = "#89b4fa" }
+perm_read  = { fg = "#f9e2af" }
+perm_write = { fg = "#f38ba8" }
+perm_exec  = { fg = "#a6e3a1" }
+perm_sep   = { fg = "#7f849c" }
+
+[input]
+border   = { fg = "#89b4fa" }
+title    = {}
+value    = {}
+selected = { reversed = true }
+
+[select]
+border   = { fg = "#89b4fa" }
+active   = { fg = "#cba6f7" }
+inactive = {}
+
+[tasks]
+border  = { fg = "#89b4fa" }
+title   = {}
+hovered = { underline = true }
+
+[which]
+mask            = { bg = "#313244" }
+cand            = { fg = "#89dceb" }
+rest            = { fg = "#9399b2" }
+desc            = { fg = "#cba6f7" }
+separator       = "  "
+separator_style = { fg = "#585b70" }
+
+[help]
+on      = { fg = "#cba6f7" }
+exec    = { fg = "#89dceb" }
+desc    = { fg = "#9399b2" }
+hovered = { bg = "#585b70", bold = true }
+footer  = { fg = "#313244", bg = "#cdd6f4" }
+
+[filetype]
+rules = [
+  # Images
+  { mime = "image/*", fg = "#89dceb" },
+  # Videos
+  { mime = "video/*", fg = "#f9e2af" },
+  # Audio
+  { mime = "audio/*", fg = "#f5c2e7" },
+  # Archives
+  { mime = "application/zip",             fg = "#f38ba8" },
+  { mime = "application/gzip",            fg = "#f38ba8" },
+  { mime = "application/x-tar",           fg = "#f38ba8" },
+  { mime = "application/x-bzip",          fg = "#f38ba8" },
+  { mime = "application/x-bzip2",         fg = "#f38ba8" },
+  { mime = "application/x-7z-compressed", fg = "#f38ba8" },
+  { mime = "application/x-rar",           fg = "#f38ba8" },
+  # Docs
+  { mime = "application/pdf",         fg = "#f38ba8" },
+  { mime = "application/msword",      fg = "#89b4fa" },
+  { mime = "application/vnd.ms-excel", fg = "#a6e3a1" },
+  # Specials
+  { name = "*.nix", fg = "#89b4fa" },
+  { name = "*", is = "orphan",    bg = "#f38ba8" },
+  { name = "*", is = "exec",      fg = "#a6e3a1" },
+  { name = "*", is = "dummy",     bg = "#f38ba8" },
+  { name = "*", is = "block",     bg = "#7f849c" },
+  { name = "*", is = "char",      bg = "#7f849c" },
+  { name = "*", is = "fifo",      bg = "#7f849c" },
+  { name = "*", is = "link",      fg = "#89dceb" },
+  { name = "*", is = "sock",      fg = "#cba6f7" },
+  { name = "*", is = "sticky",    bg = "#a6e3a1" },
+]

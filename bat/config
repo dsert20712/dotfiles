@@ -1,0 +1,16 @@
+# bat config file
+
+# Set the theme for syntax highlighting (Catppuccin Mocha)
+--theme="Catppuccin Mocha"
+
+# Show line numbers by default
+--style="numbers,changes,header"
+
+# Use italic text
+--italic-text=always
+
+# Set tab width
+--tabs=4
+
+# Wrap long lines
+--wrap=auto
