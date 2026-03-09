@@ -1,4 +1,8 @@
 --target=~/.config
 --ignore=.stowrc
+--ignore=.gitignore
 --ignore=DS_Store
+--ignore=README.md
+--ignore=setup.sh
+--ignore=install_nu_deps.sh
 --ignore=atuin/*
