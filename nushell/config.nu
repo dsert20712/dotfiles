@@ -904,12 +904,7 @@ alias c = clear
 alias ll = ls -l
 alias lt = eza --tree --level=2 --long --icons --git
 alias v = nvim
-alias as = aerospace
 alias asr = atuin scripts run
-
-def ff [] {
-    aerospace list-windows --all | fzf --bind 'enter:execute(bash -c "aerospace focus --window-id {1}")+abort'
-}
 
 # Git
 alias gc = git commit -m
@@ -927,20 +922,6 @@ alias ga = git add -p
 alias gcoall = git checkout -- .
 alias gr = git remote
 alias gre = git reset
-
-# K8s
-alias k = kubectl
-alias ka = kubectl apply -f
-alias kg = kubectl get
-alias kd = kubectl describe
-alias kdel = kubectl delete
-alias kl = kubectl logs
-alias kgpo = kubectl get pod
-alias kgd = kubectl get deployments
-alias kc = kubectx
-alias kns = kubens
-alias kl = kubectl logs -f
-alias ke = kubectl exec -it
 
 source ~/.zoxide.nu
 source ~/.cache/carapace/init.nu

@@ -92,11 +92,9 @@ $env.NU_PLUGIN_DIRS = [
 # An alternate way to add entries to $env.PATH is to use the custom command `path add`
 # which is built into the nushell stdlib:
 use std "path add"
-path add "/opt/homebrew/bin"
-path add "/opt/homebrew/sbin"
 path add ($env.HOME | path join ".turso")
 path add ($env.HOME | path join ".local/share/mise/shims")
-path add "/Users/omerxx/.local/bin"
+path add ($env.HOME | path join ".local/bin")
 
 
 # To load from a custom file you can use:
@@ -108,7 +106,7 @@ zoxide init nushell | save -f ~/.zoxide.nu
 mkdir ~/.cache/mise
 ^mise activate nu | save -f ~/.cache/mise/init.nu
 
-$env.STARSHIP_CONFIG = "/Users/omerxx/.config/starship/starship.toml"
+$env.STARSHIP_CONFIG = ($env.HOME | path join ".config/starship/starship.toml")
 $env.CARAPACE_BRIDGES = 'zsh,fish,bash,inshellisense' # optional
 mkdir ~/.cache/carapace
 carapace _carapace nushell | save --force ~/.cache/carapace/init.nu
