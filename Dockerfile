@@ -3,6 +3,10 @@ FROM ubuntu:noble
 # ── Build-time arch detection ────────────────────────────────────────────────
 # Docker's TARGETARCH is amd64 / arm64; we derive the convention each tool uses.
 ARG TARGETARCH
+ARG USERNAME=user
+ARG USER_ID
+ARG GROUP_ID
+ARG DOCKER_GROUP_ID
 ENV DEBIAN_FRONTEND=noninteractive
 
 # ── System packages ──────────────────────────────────────────────────────────
@@ -12,10 +16,14 @@ RUN apt-get update -qq && apt-get install -y -qq \
     stow tmux fontconfig \
     && rm -rf /var/lib/apt/lists/*
 
-# ── Create user ──────────────────────────────────────────────────────────────
-RUN useradd -m -s /bin/bash user && \
-    echo "user ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/user && \
-    chmod 440 /etc/sudoers.d/user
+# ── Create user with host UIDs/GIDs ──────────────────────────────────────────
+RUN userdel node 2>/dev/null || true \
+    && groupadd -g ${GROUP_ID} ${USERNAME} \
+    && useradd -u ${USER_ID} -g ${GROUP_ID} --create-home --shell /bin/bash ${USERNAME} \
+    && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} \
+    && chmod 0440 /etc/sudoers.d/${USERNAME} \
+    && groupadd -g ${DOCKER_GROUP_ID} docker \
+    && usermod -aG docker ${USERNAME}
 
 # ── Architecture variables ───────────────────────────────────────────────────
 # All install commands run as root so we resolve arch here once.
@@ -214,16 +222,16 @@ RUN set -e; \
     rm -f /tmp/nf.tar.xz
 
 # ── TPM (Tmux Plugin Manager) ─────────────────────────────────────────────────
-RUN git clone https://github.com/tmux-plugins/tpm /home/user/.tmux/plugins/tpm && \
-    chown -R user:user /home/user/.tmux
+RUN git clone https://github.com/tmux-plugins/tpm /home/${USERNAME}/.tmux/plugins/tpm && \
+    chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/.tmux
 
 # ── Copy dotfiles & stow ──────────────────────────────────────────────────────
-COPY --chown=user:user . /home/user/dotfiles/
-RUN cd /home/user/dotfiles && \
-    sudo -u user stow --dir=/home/user/dotfiles --target=/home/user .
+COPY --chown=${USERNAME}:${USERNAME} . /home/${USERNAME}/dotfiles/
+RUN cd /home/${USERNAME}/dotfiles && \
+    sudo -u ${USERNAME} stow --dir=/home/${USERNAME}/dotfiles --target=/home/${USERNAME} .
 
 # ── User-level init files ─────────────────────────────────────────────────────
-USER user
+USER ${USERNAME}
 RUN mkdir -p \
         "$HOME/.cache/starship" \
         "$HOME/.cache/carapace" \
@@ -241,9 +249,9 @@ RUN mkdir -p \
 
 # ── Set default shell to nushell ─────────────────────────────────────────────
 USER root
-RUN chsh -s "$(which nu)" user
+RUN chsh -s "$(which nu)" ${USERNAME}
 
-USER user
-WORKDIR /home/user
+USER ${USERNAME}
+WORKDIR /home/${USERNAME}
 SHELL ["/usr/local/bin/nu", "-c"]
 CMD ["/usr/local/bin/nu"]
