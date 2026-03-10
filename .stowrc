@@ -5,4 +5,6 @@
 --ignore=README.md
 --ignore=setup.sh
 --ignore=install_nu_deps.sh
+--ignore=Dockerfile
+--ignore=gh-latest
 --ignore=atuin/*

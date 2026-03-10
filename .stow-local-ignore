@@ -1,0 +1,8 @@
+^Dockerfile$
+^README\.md$
+^setup\.sh$
+^gh-latest$
+^install_nu_deps\.sh$
+^ssh$
+^\.git$
+^\.stow-local-ignore$
