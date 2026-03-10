@@ -223,10 +223,11 @@ RUN set -e; \
     fc-cache -f /usr/local/share/fonts/NerdFonts 2>/dev/null || true; \
     rm -f /tmp/nf.tar.xz
 
-# ── TMux plugins (TPM + all plugins cloned directly; install_plugins is
-#    unreliable in a TTY-less Docker build environment) ────────────────────────
+# ── TMux plugins (cloned to /opt/tmux-plugins so they survive home-dir volume
+#    mounts at runtime; TMUX_PLUGIN_MANAGER_PATH is set accordingly) ───────────
 RUN set -e; \
-    P=/home/${USERNAME}/.tmux/plugins; \
+    P=/opt/tmux-plugins; \
+    mkdir -p "$P"; \
     git clone --depth=1 https://github.com/tmux-plugins/tpm              $P/tpm; \
     git clone --depth=1 https://github.com/tmux-plugins/tmux-sensible    $P/tmux-sensible; \
     git clone --depth=1 https://github.com/tmux-plugins/tmux-yank        $P/tmux-yank; \
@@ -239,7 +240,8 @@ RUN set -e; \
     ln -s catppuccin.tmux $P/catppuccin-tmux/catppuccin-tmux.tmux; \
     git clone --depth=1 https://github.com/omerxx/tmux-sessionx          $P/tmux-sessionx; \
     git clone --depth=1 https://github.com/omerxx/tmux-floax             $P/tmux-floax; \
-    chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/.tmux
+    chown -R ${USERNAME}:${USERNAME} "$P"
+ENV TMUX_PLUGIN_MANAGER_PATH=/opt/tmux-plugins/
 
 # ── Copy dotfiles & stow ──────────────────────────────────────────────────────
 COPY --chown=${USERNAME}:${USERNAME} . /home/${USERNAME}/dotfiles/
