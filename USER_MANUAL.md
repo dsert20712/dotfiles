@@ -35,12 +35,12 @@ cd ~/dotfiles
 stow .           # symlinks everything into ~/.config and ~/ via GNU Stow
 ```
 
-First launch Tmux, then install its plugins:
+First launch Tmux — plugins are pre-installed at `/opt/tmux-plugins/`:
 
 ```
 tmux
-# Inside tmux:
-prefix + I       # (Ctrl+A then I) — installs all Tmux plugins via TPM
+# Optionally verify plugins:
+prefix + I       # (Ctrl+A then I) — should show "Already installed" for all plugins
 ```
 
 First launch Neovim — LazyVim and all plugins install automatically:
@@ -250,6 +250,7 @@ fzf finds all files including hidden, following symlinks.
 **Prefix:** `Ctrl+A`
 **Default shell:** `/usr/local/bin/nu` (Nushell)
 **Copy mode:** vi keys
+**Mouse:** enabled — scroll wheel scrolls pane buffer (enters copy mode), no arrow-key bleed into Atuin
 **Status bar:** top, Catppuccin Mocha, shows session name (left) and current directory (right)
 
 ### Behavior Settings
@@ -335,7 +336,7 @@ All bindings require the prefix (`Ctrl+A`) first unless noted as "global".
 
 | Plugin | Purpose |
 |---|---|
-| **TPM** | Plugin manager — install with `prefix + I`, update with `prefix + U` |
+| **TPM** | Plugin manager — plugins pre-installed at `/opt/tmux-plugins/`. Update with `prefix + U`. |
 | **tmux-sensible** | Sane defaults (longer history, faster response, etc.) |
 | **tmux-yank** | System clipboard integration in copy mode |
 | **tmux-resurrect** | Save (`prefix + Ctrl+S`) and restore (`prefix + Ctrl+R`) sessions across restarts. Saves Neovim sessions too. |
@@ -523,10 +524,6 @@ Surround text objects (add, delete, replace surrounding characters).
 | `gsF<char>` | Find surrounding (left) | |
 | `gsh<char>` | Highlight surrounding | |
 | `gsn` | Update `n_lines` search range | |
-
-### Plugin: windsurf.vim (Codeium)
-
-Windsurf AI completions load on `BufEnter`. Uses Codeium's ghost-text inline completions. Default Codeium keybindings apply (typically `Tab` to accept, `Ctrl+]` to dismiss).
 
 ### Plugin: conform.nvim (Formatter)
 
