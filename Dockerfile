@@ -195,6 +195,7 @@ RUN set -e; \
     GO_ARCH=$(cat /tmp/GO_ARCH); \
     VER=$(gh-latest hashicorp/terraform-ls); \
     CLEAN_VER="${VER#v}"; \
+    test -n "$CLEAN_VER" || { echo "ERROR: could not resolve terraform-ls version"; exit 1; }; \
     curl -fsSL "https://releases.hashicorp.com/terraform-ls/${CLEAN_VER}/terraform-ls_${CLEAN_VER}_linux_${GO_ARCH}.zip" -o /tmp/terraform-ls.zip; \
     unzip -q /tmp/terraform-ls.zip terraform-ls -d /usr/local/bin/; \
     chmod +x /usr/local/bin/terraform-ls; \
