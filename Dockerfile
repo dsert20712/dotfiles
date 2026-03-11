@@ -193,7 +193,8 @@ RUN set -e; \
 # ── Node.js 22 ───────────────────────────────────────────────────────────────
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get install -y -qq nodejs && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    npm install -g markdownlint-cli2
 
 # ── mise ─────────────────────────────────────────────────────────────────────
 RUN set -e; \
