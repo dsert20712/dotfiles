@@ -310,11 +310,3 @@ theme "catppuccin-mocha"
 // Default: false
 //
 // mirror_session true
-
-// The folder in which Zellij will look for layouts
-//
-// layout_dir "/Users/omerhamerman/dotfiles/zellij/layouts"
-
-// The folder in which Zellij will look for themes
-//
-theme_dir "/Users/omerxx/dotfiles/zellij/themes"
