@@ -14,7 +14,7 @@ ENV LC_ALL=C.UTF-8
 # ── System packages ──────────────────────────────────────────────────────────
 RUN apt-get update -qq && apt-get install -y -qq \
     sudo curl ca-certificates git unzip tar gzip xz-utils \
-    build-essential pkg-config libssl-dev \
+    build-essential pkg-config libssl-dev libicu-dev \
     stow tmux fontconfig \
     && rm -rf /var/lib/apt/lists/*
 
@@ -189,6 +189,15 @@ RUN set -e; \
     VER=$(gh-latest dlvhdr/gh-dash); \
     curl -fsSL "https://github.com/dlvhdr/gh-dash/releases/download/${VER}/gh-dash_${VER}_linux-${GO_ARCH}" -o /usr/local/bin/gh-dash; \
     chmod +x /usr/local/bin/gh-dash
+
+# ── Go ───────────────────────────────────────────────────────────────────────
+RUN set -e; \
+    GO_ARCH=$(cat /tmp/GO_ARCH); \
+    VER=$(curl -fsSL "https://go.dev/VERSION?m=text" | head -1); \
+    curl -fsSL "https://go.dev/dl/${VER}.linux-${GO_ARCH}.tar.gz" -o /tmp/go.tar.gz; \
+    tar xzf /tmp/go.tar.gz -C /usr/local; \
+    rm -f /tmp/go.tar.gz
+ENV PATH="/usr/local/go/bin:${PATH}"
 
 # ── Node.js 22 ───────────────────────────────────────────────────────────────
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
