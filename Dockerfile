@@ -190,6 +190,16 @@ RUN set -e; \
     curl -fsSL "https://github.com/dlvhdr/gh-dash/releases/download/${VER}/gh-dash_${VER}_linux-${GO_ARCH}" -o /usr/local/bin/gh-dash; \
     chmod +x /usr/local/bin/gh-dash
 
+# ── terraform-ls ─────────────────────────────────────────────────────────────
+RUN set -e; \
+    GO_ARCH=$(cat /tmp/GO_ARCH); \
+    VER=$(gh-latest hashicorp/terraform-ls); \
+    CLEAN_VER="${VER#v}"; \
+    curl -fsSL "https://releases.hashicorp.com/terraform-ls/${CLEAN_VER}/terraform-ls_${CLEAN_VER}_linux_${GO_ARCH}.zip" -o /tmp/terraform-ls.zip; \
+    unzip -q /tmp/terraform-ls.zip terraform-ls -d /usr/local/bin/; \
+    chmod +x /usr/local/bin/terraform-ls; \
+    rm -f /tmp/terraform-ls.zip
+
 # ── Go ───────────────────────────────────────────────────────────────────────
 RUN set -e; \
     GO_ARCH=$(cat /tmp/GO_ARCH); \
