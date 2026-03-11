@@ -247,7 +247,7 @@ ENV TMUX_PLUGIN_MANAGER_PATH=/opt/tmux-plugins/
 COPY --chown=${USERNAME}:${USERNAME} . /home/${USERNAME}/dotfiles/
 RUN mkdir -p /home/${USERNAME}/.config && \
     chown ${USERNAME}:${USERNAME} /home/${USERNAME}/.config && \
-    sudo -u ${USERNAME} stow --dir=/home/${USERNAME}/dotfiles --target=/home/${USERNAME} --ignore=wezterm --ignore=ghostty .
+    sudo -u ${USERNAME} stow --dir=/home/${USERNAME}/dotfiles --target=/home/${USERNAME} .
 # ── Trust mise global config ──────────────────────────────────────────────────
 RUN sudo -u ${USERNAME} mise trust /home/${USERNAME}/.config/mise/config.toml 2>/dev/null || true
 
